@@ -271,5 +271,16 @@
     }
     window.addEventListener('resize', initCanvas); initCanvas(); animate();
 </script>
+    
+    <audio id="myBGM" autoplay loop>
+    <source src="bgm.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+    // 浏览器禁止自动播放有声音频，点击网页任意位置即可播放
+    document.addEventListener('click', function() {
+        document.getElementById('myBGM').play();
+    }, { once: true });
+</script>
 
 </body></html>
