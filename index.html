@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- saved from url=(0048)file:///C:/Users/zhangningxin/Desktop/index.html -->
-<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>一滴泪</title>
     <style>
@@ -109,19 +109,23 @@
     </style>
 </head>
 <body>
-    <canvas id="starfield" width="1455" height="783"></canvas>
-    <audio id="bgMusic" loop=""><source src="https://music.163.com/song/media/outer/url?id=1927693793.mp3" type="audio/mpeg"></audio>
+    <canvas id="starfield"></canvas>
 
-    <div id="page1" class="page-container">
+    <!-- 背景音乐：本地 bgm.mp3，自动播放被拦时点屏幕任意处触发 -->
+    <audio id="myBGM" autoplay loop>
+        <source src="bgm.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="page1" class="page-container active-page">
         <div class="main-text">一滴淚<span class="sub-text">承諾不過逝水輕淺</span></div>
         <div class="divider"></div>
-        <div class="music-tip" id="musicTip" style="display: none;">點擊屏幕以播放音樂</div>
+        <div class="music-tip" id="musicTip">點擊屏幕以播放音樂</div>
     </div>
 
-    <div id="page2" class="page-container active-page page2-active">
+    <div id="page2" class="page-container">
         <div class="heartbeat-glow"></div>
-        <div class="title-container"><div class="title show" id="p2-title">萍水相逢</div><div class="hanging-tear show" id="hangingTear"></div></div>
-        <div class="info-group" id="p2-info"><div class="info-item name show-item">我名為「霧凇」</div><div class="info-item show-item">天蠍座</div></div><div class="tap-hint" id="tapHint2" style="opacity: 1;">輕觸屏幕，繼續</div>
+        <div class="title-container"><div class="title" id="p2-title">萍水相逢</div><div class="hanging-tear" id="hangingTear"></div></div>
+        <div class="info-group" id="p2-info"></div><div class="tap-hint" id="tapHint2">輕觸屏幕，繼續</div>
     </div>
 
     <div id="page3" class="page-container">
@@ -181,20 +185,25 @@
     </div>
 
 <script>
-    const bgMusic = document.getElementById('bgMusic'), page1 = document.getElementById('page1'), page2 = document.getElementById('page2'), page3 = document.getElementById('page3'), page4 = document.getElementById('page4'), page5 = document.getElementById('page5'), page6 = document.getElementById('page6');
+    // 背景音乐：点击任意位置播放（浏览器自动播放限制）
+    document.addEventListener('click', function() {
+        document.getElementById('myBGM').play();
+    }, { once: true });
+
+    const page1 = document.getElementById('page1'), page2 = document.getElementById('page2'), page3 = document.getElementById('page3'), page4 = document.getElementById('page4'), page5 = document.getElementById('page5'), page6 = document.getElementById('page6');
     const p2Title = document.getElementById('p2-title'), hangingTear = document.getElementById('hangingTear'), p2Info = document.getElementById('p2-info'), tapHint2 = document.getElementById('tapHint2'), tapHint3 = document.getElementById('tapHint3'), tapHint4 = document.getElementById('tapHint4'), tapHint5 = document.getElementById('tapHint5');
     const p3Quote = document.getElementById('p3-quote'), p3Cursor = document.getElementById('p3-cursor'), p3Tear = document.getElementById('p3-tear'), p3Tags = document.getElementById('p3-tags'), p3RandomDog = document.getElementById('p3-random-dog'), p3RandomProp = document.getElementById('p3-random-prop');
     const box1 = document.getElementById('box1'), rippleBox = document.getElementById('rippleBox'), box2 = document.getElementById('box2'), tag1 = document.getElementById('tag1'), box3 = document.getElementById('box3'), tag2 = document.getElementById('tag2'), box4 = document.getElementById('box4'), tag3 = document.getElementById('tag3');
     const paperGrid = document.getElementById('paperGrid'), p5Quote = document.getElementById('p5Quote'), p5Header = document.getElementById('p5Header'), rulesBox = document.getElementById('rulesBox'), p6Text1 = document.getElementById('p6Text1'), p6Text2 = document.getElementById('p6Text2');
     const canvas = document.getElementById('starfield');
 
-    const textLines = ["我名為「霧凇」", "天蠍座", "T", "18歲", "INTP"];
-    let currentStep = 0, p3Step = 0, isPage4Finished = false, isPage5Finished = false; bgMusic.volume = 0.6;
+    // 【修改点】这里只保留了雾凇和天蝎座
+    const textLines = ["我名為「霧凇」", "天蠍座"];
+    let currentStep = 0, p3Step = 0, isPage4Finished = false, isPage5Finished = false;
 
     function goToPage(nextPage) { document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active-page')); setTimeout(() => { nextPage.classList.add('active-page'); }, 500); }
 
     page1.addEventListener('click', function startApp() {
-        if (bgMusic.paused) bgMusic.play().catch(e => console.log(e));
         document.getElementById('musicTip').style.display = 'none'; goToPage(page2);
         setTimeout(() => { page2.classList.add('page2-active'); p2Title.classList.add('show'); setTimeout(() => { hangingTear.classList.add('show'); }, 1500); tapHint2.style.opacity = '1'; }, 1000);
     }, { once: true });
@@ -204,7 +213,10 @@
             const div = document.createElement('div'); div.className = 'info-item'; if (currentStep === 0) div.classList.add('name');
             div.innerText = textLines[currentStep]; p2Info.appendChild(div); setTimeout(() => div.classList.add('show-item'), 50); currentStep++;
             if (currentStep === textLines.length) tapHint2.style.opacity = '0';
-        } else { goToPage(page3); setTimeout(() => { p3Quote.classList.add('fade-in-up'); tapHint3.style.display = 'block'; tapHint3.style.opacity = '1'; }, 500); }
+        } else { 
+            // 当两句话都展示完毕后，再次点击进入第三页
+            goToPage(page3); setTimeout(() => { p3Quote.classList.add('fade-in-up'); tapHint3.style.display = 'block'; tapHint3.style.opacity = '1'; }, 500); 
+        }
     });
 
     page3.addEventListener('click', function() {
@@ -271,16 +283,5 @@
     }
     window.addEventListener('resize', initCanvas); initCanvas(); animate();
 </script>
-    
-    <audio id="myBGM" autoplay loop>
-    <source src="bgm.mp3" type="audio/mpeg">
-</audio>
-
-<script>
-    // 浏览器禁止自动播放有声音频，点击网页任意位置即可播放
-    document.addEventListener('click', function() {
-        document.getElementById('myBGM').play();
-    }, { once: true });
-</script>
-
-</body></html>
+</body>
+</html>
